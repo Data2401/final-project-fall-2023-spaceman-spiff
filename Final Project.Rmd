@@ -1,18 +1,22 @@
 ---
-title: "Final Project"
+title: "How Are You Going to Die?"
 author: "Andrew Zilnicki"
 date: "2023-11-10"
 output: 
-  html_document:
-    toc: true
-    toc_float: true
+  slidy_presentation:
+    widescreen: true
+    smaller: true
 ---
 
 # Introduction
 
-When thinking about death, do you ever wonder about what people actually die from? What are the causes that end lives? Is there certain illnesses that affect more people? Does which state you live in make a difference in how your life ends?
+When thinking about death, do you ever wonder about what people actually
+die from? <br> 
+What are the causes that end lives? <br> 
+Is there certain illnesses that affect more people?<br> 
+Does which state you live in make a difference in how your life ends?
 
-## Questions
+# Questions
 
 **Domain Question**
 
@@ -20,26 +24,37 @@ What are the top causes of deaths by number and by state?
 
 **Other Questions**
 
-1. Which year had the most deaths by each cause of death?
-2. Does using the Age-adjusted death rate show different information about deaths per state?
-3. Does using the Age-adjusted death rate show different information about deaths per cause?
-4. Does using the Age-adjusted death rate show different information about deaths per year?
-5. In which states is cancer most deadly?
-6. Which states have the highest amount of suicide both total and age-adjusted?
+1.  Does using the Age-adjusted death rate show different information
+    about deaths per state?
+2.  Does using the Age-adjusted death rate show different information
+    about deaths per cause?
+3.  Does using the per-capita death rate show different information
+    about deaths per state?
+4.  In which states is cancer most deadly using the per-capita death rate?
+5.  Which states have the highest rates of suicide using the per-capita death rate?
 
 # Data Source
 
-[Link to Dataset](https://catalog.data.gov/dataset/nchs-leading-causes-of-death-united-states/resource/9096aa3c-0d4b-42f1-bb01-284816d92a15)
+I got this from data.gov and the population data from the 2010 census.
+<br> 
+[Link to
+Dataset](https://catalog.data.gov/dataset/nchs-leading-causes-of-death-united-states/resource/9096aa3c-0d4b-42f1-bb01-284816d92a15)
 
-# Get Ready
+# Here are the packages I used
 
-```{r}
+```{r message=FALSE}
+library(DT)
+library(usmap)
 library(dplyr)
 library(ggplot2)
 ```
 
 # Unfiltered Data
-This data set is from Data.gov. First, I had to download the data from Data.gov. The data was downloaded via a CSV file. Once I created and R Markdown file I uploaded the CSV file into a new data frame called total_data.
+
+This data set is from Data.gov. First, I had to download the data from
+Data.gov. The data was downloaded via a CSV file. Once I created and R
+Markdown file I uploaded the CSV file into a new data frame called
+total_data.
 
 ```{r}
 total_data <- read.csv("/Users/andrew/DATA 2401/Final project/NCHS_-_Leading_Causes_of_Death__United_States.csv")
@@ -48,24 +63,32 @@ glimpse(total_data)
 
 ## Data Key Terms:
 
-**Year:** Year of death. <br>
-**X113 Cause Name:** Detailed name for cause of death. <br>
-**Cause Name:** Short name for cause of death. <br>
-**State:** State where death occurred. <br>
-**Deaths:** Total deaths for that death and cause in a particular year. <br>
-**Age adjusted Death Rate:** Formula determined by total expected number of deaths divided by the sum of the standard population and the resulting quotient is multiplied by 1,000,000. This is the death rate that would have existed if the population under study had the same age distribution as the "standard" population. This is useful for summary measures adjusted for differences in age distributions.
+**Year:** Year of death. <br> **X113 Cause Name:** Detailed name for
+cause of death. <br> **Cause Name:** Short name for cause of death. <br>
+**State:** State where death occurred. <br> **Deaths:** Total deaths for
+that death and cause in a particular year. <br> **Age adjusted Death
+Rate:** Formula determined by total expected number of deaths divided by
+the sum of the standard population and the resulting quotient is
+multiplied by 1,000,000. This is the death rate that would have existed
+if the population under study had the same age distribution as the
+"standard" population. This is useful for summary measures adjusted for
+differences in age distributions.
 
-## Data Analysis
+# Data Analysis
 
-To start analyzing data we group our data by state name and cause of death. We can then plot the data of total deaths by each cause. To make it easier to view we organize the causes from descending order.
+To start analyzing data we group our data by state name and cause of
+death. We can then plot the data of total deaths by each cause. To make
+it easier to view we organize the causes from descending order.
 
-```{r}
+```{r, echo=FALSE, message=FALSE}
 result <- total_data %>%
   group_by(Cause.Name, State) %>%
   summarize(TotalDeaths = sum(Deaths)) 
 ```
 
-```{r}
+## 
+
+```{r, echo=FALSE}
 result %>%
   filter(State == "United States" & Cause.Name != "All causes") %>%
   arrange(desc(TotalDeaths)) %>%
@@ -79,9 +102,12 @@ result %>%
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
-We can next filter our data by total deaths for each state. Again, can order it from the most deaths to the least death for easier viewing.
+# 
 
-```{r}
+Now filter our data by total deaths for each state ordering from the
+least deaths to the most deathd for easy viewing.
+
+```{r, echo=FALSE}
 result %>%
   filter(Cause.Name == "All causes" & State != "United States") %>%
   arrange(desc(TotalDeaths)) %>%
@@ -95,19 +121,19 @@ result %>%
   theme_minimal()
 ```
 
-Now that we can see the total deaths per state and total per cause let's filter it down a little. Let's take the top 5 causes and the top 10 states.
+#
 
-```{r}
+Now let's filter it down to the top 5 causes and the top 10 states.
+
+```{r message=FALSE, echo=FALSE}
 filtered_data <- result %>%
   filter(
     Cause.Name %in% c("Heart disease", "Cancer", "Stroke", "CLRD", "Unintentional injuries") &
     State %in% c("California", "Florida", "Texas", "New York", "Pennsylvania", "Ohio", "Illinois", "Michigan", "North Carolina", "New Jersey")
   )
-
-print(filtered_data)
 ```
 
-```{r}
+```{r, echo=FALSE}
 ggplot(filtered_data, aes(x = reorder(State, -TotalDeaths), y = TotalDeaths, fill = Cause.Name)) +
   geom_bar(stat = "identity") +
   coord_flip() +
@@ -117,22 +143,28 @@ ggplot(filtered_data, aes(x = reorder(State, -TotalDeaths), y = TotalDeaths, fil
        fill = "Cause Name") +
   theme_minimal()
 ```
-<br> This shows that California has far more deaths than even the second closest state of Florida. California has triple the number of deaths from the top 5 causes once you look at North Carolina or New Jersey.
 
-## A better way to look at causes?
+This shows that California has far more deaths than even the second
+closest state of Florida. California has triple the number of deaths
+from the top 5 causes once you look at North Carolina or New Jersey.
 
-It might look like some states have far more deaths from illness, but these states also have the largest populations. What if we used the Age-adjusted data? Would we get different results for states and causes?
+# A better way to look at causes?
 
-```{r}
+It might look like some states have far more deaths from illness, but
+these states also have the largest populations. <br>
+What if we used the Age-adjusted data? <br>
+Would we get different results for states and causes?
+
+#
+
+```{r, message=FALSE, echo=FALSE}
 new_filtered_data <- total_data %>%
   filter(Cause.Name != "All causes" & State != "United States") %>%
   group_by(Cause.Name, State) %>%
   summarise(TotalAgeAdjustedDeathRate = sum(Age.adjusted.Death.Rate))
-
-print(new_filtered_data)
 ```
 
-```{r}
+```{r, message=FALSE, echo=FALSE}
 ggplot(new_filtered_data, aes(x = reorder(Cause.Name, -TotalAgeAdjustedDeathRate), y = TotalAgeAdjustedDeathRate, fill = Cause.Name)) +
   geom_bar(stat = "identity") +
   coord_flip() +
@@ -143,7 +175,9 @@ ggplot(new_filtered_data, aes(x = reorder(Cause.Name, -TotalAgeAdjustedDeathRate
   theme_minimal()
 ```
 
-```{r}
+#
+
+```{r message=FALSE, echo=FALSE}
 ggplot(new_filtered_data, aes(x = reorder(State, -TotalAgeAdjustedDeathRate), y = TotalAgeAdjustedDeathRate, fill = State)) +
   geom_bar(stat = "identity") +
   coord_flip() +
@@ -153,18 +187,23 @@ ggplot(new_filtered_data, aes(x = reorder(State, -TotalAgeAdjustedDeathRate), y 
        fill = "State") +
   theme_minimal()
 ```
+
+#
+
 Now let's look at the top 5 Age-Adjusted Death Causes and the Top 10 states
 
-```{r}
+```{r message=FALSE, echo=FALSE}
 top_causes_states <- new_filtered_data %>%
   filter(Cause.Name %in% c("Heart disease", "Cancer", "Stroke", "CLRD", "Unintentional injuries") &
            State %in% c("Mississippi", "Kentucky", "Oklahoma", "West Virginia", "Alabama",
                          "Louisiana", "Arkansas", "Tennessee", "Missouri", "South Carolina"))
 
-print(top_causes_states)
+datatable(top_causes_states, options = list(pageLength = 10))
 ```
 
-```{r}
+#
+
+```{r message=FALSE, echo=FALSE}
 ggplot(top_causes_states, aes(x = reorder(State, -TotalAgeAdjustedDeathRate), y = TotalAgeAdjustedDeathRate, fill = Cause.Name)) +
   geom_bar(stat = "identity") +
   coord_flip() +
@@ -175,47 +214,122 @@ ggplot(top_causes_states, aes(x = reorder(State, -TotalAgeAdjustedDeathRate), y 
   theme_minimal()
 ```
 
-Let's compare the data from total deaths and age adjusted deaths.
-```{r}
-total_deaths_data <- total_data %>%
-  filter(Cause.Name %in% c("Heart disease", "Cancer", "Stroke", "CLRD", "Unintentional injuries") &
-           State %in% c("Mississippi", "Kentucky", "Oklahoma", "West Virginia", "Alabama",
-                         "Louisiana", "Arkansas", "Tennessee", "Missouri", "South Carolina")) %>%
-  group_by(Year, Cause.Name, State) %>%
-  summarise(TotalDeaths = sum(Deaths))
+```{r message=FALSE, echo=FALSE}
+result_question1 <- total_data %>%
+  group_by(Cause.Name) %>%
+  filter(!is.na(Deaths)) %>%
+  slice(which.max(Deaths))
 
-age_adjusted_deaths_data <- total_data %>%
-  filter(Cause.Name %in% c("Heart disease", "Cancer", "Stroke", "CLRD", "Unintentional injuries") &
-           State %in% c("Mississippi", "Kentucky", "Oklahoma", "West Virginia", "Alabama",
-                         "Louisiana", "Arkansas", "Tennessee", "Missouri", "South Carolina")) %>%
-  group_by(Year, Cause.Name, State) %>%
-  summarise(TotalAgeAdjustedDeathRate = sum(Age.adjusted.Death.Rate))
+print(result_question1[, c("Year", "Cause.Name", "Deaths")])
+```
 
-merged_data <- merge(total_deaths_data, age_adjusted_deaths_data, by = c("Year", "Cause.Name", "State"))
+# Using per capita
+
+Let's look at the deaths using population per capita to see if that changes the results. <br>
+I am going to pick 2010 and load population data from the census.
+
+```{r message=FALSE}
+# Creating a data frame with state populations from the 2010 Census
+state_populations_2010 <- data.frame(
+  State = c(
+    "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado",
+    "Connecticut", "Delaware", "District of Columbia", "Florida", "Georgia", "Hawaii", "Idaho",
+    "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana",
+    "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota", "Mississippi",
+    "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey",
+    "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma",
+    "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota",
+    "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia",
+    "Wisconsin", "Wyoming"
+  ),
+  Population_2010 = c(
+    4779736, 710231, 6392017, 2915918, 37253956, 5029196,
+    3574097, 897934, 601723, 18801310, 9687653, 1360301, 1567582,
+    12830632, 6483802, 3046355, 2853118, 4339367, 4533372,
+    1328361, 5773552, 6547629, 9883640, 5303925, 2967297,
+    5988927, 989415, 1826341, 2700551, 1316470, 8791894,
+    2059179, 19378102, 9535483, 672591, 11536504, 3751351,
+    3831074, 12702379, 1052567, 4625364, 814180, 6346105,
+    25145561, 2763885, 625741, 8001024, 6724540, 1852994,
+    5686986, 563626
+  )
+)
+```
+
+```{r message=FALSE, echo=FALSE}
+total_data_2010 <- total_data %>% 
+  filter(Year == 2010) %>% 
+  select(Year, Cause.Name, State, Deaths, Age.adjusted.Death.Rate)
+
+merged_data <- left_join(total_data_2010, state_populations_2010, by = "State")
 
 merged_data <- merged_data %>%
-  group_by(State, Cause.Name) %>%
-  summarise(TotalDeaths = sum(TotalDeaths),
-            TotalAgeAdjustedDeathRate = sum(TotalAgeAdjustedDeathRate))
+  mutate(Deaths_Per_Capita = Deaths / Population_2010 * 1000)  # Multiplying by 1000 to get deaths per 1000 people
 ```
 
-```{r}
-ggplot(merged_data, aes(x = State, y = TotalDeaths, group = Cause.Name, color = "Total Deaths")) +
-  geom_line(size = 1.5) +
-  geom_line(aes(y = TotalAgeAdjustedDeathRate, color = "Age-Adjusted Deaths", linetype = "Age-Adjusted Deaths"), size = 1.5) +
-  labs(title = "Total Deaths and Age-Adjusted Deaths by State",
-       x = "State",
-       y = "Count",
-       color = "Legend") +
-  theme_minimal() +
-  theme(legend.position = "top", legend.title = element_blank())
+#
+This map shows the deaths per 1,000 people for each state. The lower table gives the numbers for the top 10 states.
+
+```{r message=FALSE, echo=FALSE}
+merged_data$state <- tolower(merged_data$State)
+plot_usmap(data = merged_data, values = "Deaths_Per_Capita", color = "lightblue") +
+  labs(title = "Deaths Per Capita by State in 2010",
+       subtitle = "Color-coded map based on Deaths Per Capita (per 1,000 people)") +
+  theme(legend.position = "bottom", legend.box = "horizontal")
+
+top_merged_data <- merged_data %>%
+  filter(Cause.Name == "All causes") %>%
+  arrange(desc(Deaths_Per_Capita)) %>%
+  top_n(10, Deaths_Per_Capita)
+
+print(top_merged_data[, c("State", "Deaths_Per_Capita")])
 ```
 
+#
+This map shows the deaths per 1,000 people for people who died because of cancer for each state. The lower table gives the numbers for the top 10 states.
 
+```{r message=FALSE, echo=FALSE}
+cancer_data <- merged_data %>%
+  filter(Cause.Name == "Cancer")
 
+cancer_data$state <- tolower(cancer_data$State)
+  plot_usmap(data = cancer_data, values = "Deaths_Per_Capita", color = "lightblue") +
+  labs(title = "Cancer Deaths Per Capita by State in 2010",
+       subtitle = "Color-coded map based on Cancer Deaths Per Capita (per 1,000 people)") +
+  theme(legend.position = "bottom", legend.box = "horizontal")
 
+top_cancer_data <- merged_data %>%
+  filter(Cause.Name == "Cancer") %>%
+  arrange(desc(Deaths_Per_Capita)) %>%
+  top_n(10, Deaths_Per_Capita)
 
+print(top_cancer_data[, c("State", "Deaths_Per_Capita")])
+```
 
+#
+This map shows the deaths per 100,000 people for people who died because of suicide for each state. The lower table gives the numbers for the top 10 states.
 
+```{r message=FALSE, echo=FALSE}
+suicides_data <- total_data %>%
+  filter(Year == 2010, Cause.Name == "Suicide") %>%
+  select(State, Deaths, Age.adjusted.Death.Rate)
 
+suicides_merged_data <- left_join(suicides_data, state_populations_2010, by = "State")
 
+suicides_merged_data <- suicides_merged_data %>%
+  mutate(Suicides_Per_Capita = Deaths / Population_2010 * 100000)  # Multiplying by 100,000 to get per 100,000 people
+
+suicides_merged_data$state <- tolower(suicides_merged_data$State)
+
+plot_usmap(data = suicides_merged_data, values = "Suicides_Per_Capita") +
+  labs(title = "Suicides Per Capita by State",
+       subtitle = "Color-coded map based on Suicides Per Capita (per 100,000 people)") +
+  theme(legend.position = "bottom", legend.box = "horizontal")
+
+top_suicide_data <- suicides_merged_data %>%
+  top_n(10, Suicides_Per_Capita) %>%
+  arrange(desc(Suicides_Per_Capita))
+
+print(top_suicide_data[, c("State", "Suicides_Per_Capita")])
+
+```
